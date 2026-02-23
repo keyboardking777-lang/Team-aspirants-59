@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Traffic Signal</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h1>Smart Traffic Signal Optimization</h1>
+
+<form method="POST">
+    Lane A Vehicles: <input type="number" name="laneA" required><br><br>
+    Lane B Vehicles: <input type="number" name="laneB" required><br><br>
+    Lane C Vehicles: <input type="number" name="laneC" required><br><br>
+    Lane D Vehicles: <input type="number" name="laneD" required><br><br>
+
+    <button type="submit">Optimize Signal</button>
+</form>
+
+<h2>Active Lane: {{active_lane}}</h2>
+<h2>Fuel Saved: {{fuel_saved}} ml</h2>
+
+<h3>Green Time Allocation</h3>
+<ul>
+{% for i in range(lanes|length) %}
+    <li>{{ lanes[i] }} : {{ green_times[i] }} seconds</li>
+{% endfor %}
+</ul>
+
+<h3>Traffic Visualization</h3>
+
+<canvas id="vehicleChart"></canvas>
+<br><br>
+<canvas id="greenChart"></canvas>
+
+<script>
+
+const lanes = {{ lanes | tojson }};
+const vehicles = {{ vehicles | tojson }};
+const greenTimes = {{ green_times | tojson }};
+
+// Vehicle Count Chart
+new Chart(document.getElementById('vehicleChart'), {
+    type: 'bar',
+    data: {
+        labels: lanes,
+        datasets: [{
+            label: 'Vehicle Count',
+            data: vehicles
+        }]
+    }
+});

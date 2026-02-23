@@ -1,0 +1,57 @@
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+MIN_GREEN = 10
+MAX_GREEN = 60
+FUEL_WASTE_PER_SEC = 0.02
+
+lanes = ["Lane A", "Lane B", "Lane C", "Lane D"]
+
+def calculate_priority(v, w):
+    return (v * 2) + w
+
+def calculate_green_time(priority):
+    return max(MIN_GREEN, min(MAX_GREEN, priority))
+
+@app.route("/", methods=["GET", "POST"])
+def dashboard():
+
+    vehicles = [0,0,0,0]
+    waiting = [10,10,10,10]
+
+    if request.method == "POST":
+        vehicles = [
+            int(request.form["laneA"]),
+            int(request.form["laneB"]),
+            int(request.form["laneC"]),
+            int(request.form["laneD"])
+        ]
+
+    priorities = []
+    green_times = []
+
+    for v, w in zip(vehicles, waiting):
+        p = calculate_priority(v, w)
+        g = calculate_green_time(p)
+        priorities.append(p)
+        green_times.append(g)
+
+    active_lane = lanes[priorities.index(max(priorities))]
+
+    fixed_time = 30
+    smart_time = max(green_times)
+
+    fixed_waste = sum(vehicles) * fixed_time * FUEL_WASTE_PER_SEC
+    smart_waste = sum(vehicles) * smart_time * FUEL_WASTE_PER_SEC
+    fuel_saved = round(fixed_waste - smart_waste, 2)
+
+    return render_template("index.html",
+                           lanes=lanes,
+                           vehicles=vehicles,
+                           green_times=green_times,
+                           active_lane=active_lane,
+                           fuel_saved=fuel_saved)
+
+if __name__ == "__main__":
+    app.run(debug=True)
